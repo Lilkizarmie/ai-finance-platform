@@ -32,7 +32,12 @@ export default async function TransactionsPage() {
           </div>
           <a href="/transaction/create">
             <Button>
-              New Transaction
+              Import Transaction
+            </Button>
+          </a>
+           <a href="/transaction/create">
+            <Button>
+              Export Transaction
             </Button>
           </a>
         </div>

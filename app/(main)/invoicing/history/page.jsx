@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, Plus } from 'lucide-react'
+import { Search, Plus, Download } from 'lucide-react'
 
 export default function InvoiceHistoryPage() {
   return (
@@ -23,7 +23,11 @@ export default function InvoiceHistoryPage() {
           </div>
           <Button>
             <Plus className="h-4 w-4 mr-2" />
-            Create Invoice
+            Import Invoice
+          </Button>
+          <Button>
+            <Download className="h-4 w-4 mr-2" />
+            Export Invoice
           </Button>
         </div>
 
