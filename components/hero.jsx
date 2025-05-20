@@ -27,12 +27,26 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="pt-40 pb-20 px-4">
-      <div className="container mx-auto text-center">
-        <h1 className="text-5xl md:text-8xl lg:text-[105px] pb-6 gradient-title">
-          Manage Your Finances <br /> with Intelligence
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/banner.png"
+          fill
+          alt="Dashboard Preview"
+          // className="object-cover brightness-[0.9]"
+          priority
+        />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/30" />
+      </div>
+
+      {/* Content */}
+      <div className="container mx-auto text-center relative z-10 px-4">
+        <h1 className="text-5xl md:text-8xl lg:text-[105px] pb-6 text-white">
+          Manage Your Finances <br /> with AI
         </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
           An AI-powered financial management platform that helps you track,
           analyze, and optimize your spending with real-time insights.
         </p>
@@ -42,23 +56,11 @@ const HeroSection = () => {
               Get Started
             </Button>
           </Link>
-          <Link href="https://www.youtube.com/roadsidecoder">
-            <Button size="lg" variant="outline" className="px-8">
+          <Link href="#">
+            <Button size="lg" variant="outline" className="px-8 bg-transparent text-white border-white hover:bg-white hover:text-black">
               Watch Demo
             </Button>
           </Link>
-        </div>
-        <div className="hero-image-wrapper mt-5 md:mt-0">
-          <div ref={imageRef} className="hero-image">
-            <Image
-              src="/banner.jpeg"
-              width={1280}
-              height={720}
-              alt="Dashboard Preview"
-              className="rounded-lg shadow-2xl border mx-auto"
-              priority
-            />
-          </div>
         </div>
       </div>
     </section>
