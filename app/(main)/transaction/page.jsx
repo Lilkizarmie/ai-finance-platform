@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import { TransactionList } from './_components/transaction-list'
+import { TransactionAnalytics } from './_components/transaction-analytics'
 
 export default async function TransactionsPage() {
   const [accounts, transactions] = await Promise.all([
@@ -35,6 +36,11 @@ export default async function TransactionsPage() {
             </Button>
           </a>
         </div>
+
+        {/* Transaction Analytics */}
+        <Suspense fallback={<div>Loading analytics...</div>}>
+          <TransactionAnalytics transactions={transactions} />
+        </Suspense>
 
         {/* Transaction list */}
         <Suspense fallback={<div>Loading transactions...</div>}>

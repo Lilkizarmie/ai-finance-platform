@@ -57,16 +57,10 @@ const sidebarItems = [
     description: 'Get AI-powered insights'
   },
   {
-    title: 'Integrations',
-    href: '/integrations',
+    title: 'Data Sources',
+    href: '/data-sources',
     icon: Link2,
     description: 'Connect with other tools'
-  },
-  {
-    title: 'Clients & Vendors',
-    href: '/clients',
-    icon: Users,
-    description: 'Manage business contacts'
   },
   {
     title: 'Notifications',
