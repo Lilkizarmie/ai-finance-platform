@@ -49,12 +49,6 @@ const Header = async () => {
                 <span className="hidden md:inline">Dashboard</span>
               </Button>
             </Link>
-            <a href="/transaction/create">
-              <Button className="flex items-center gap-2">
-                <PenBox size={18} />
-                <span className="hidden md:inline">Add Transaction</span>
-              </Button>
-            </a>
           </SignedIn>
           <SignedOut>
             <SignInButton forceRedirectUrl="/dashboard">

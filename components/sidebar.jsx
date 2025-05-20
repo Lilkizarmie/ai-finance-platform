@@ -15,7 +15,9 @@ import {
   Bell,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  BookOpen,
+  Settings2
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -33,10 +35,16 @@ const sidebarItems = [
     description: 'Manage and categorize transactions'
   },
   {
+    title: 'Explainer',
+    href: '/explainer',
+    icon: BookOpen,
+    description: 'Deeper analysis'
+  },
+  {
     title: 'Invoicing',
     href: '/invoicing',
     icon: FileText,
-    description: 'Create and manage invoices'
+    description: 'invoicing patterns & revenue flows'
   },
   {
     title: 'Bills & Expenses',
@@ -55,6 +63,12 @@ const sidebarItems = [
     href: '/assistant',
     icon: Bot,
     description: 'Get AI-powered insights'
+  },
+  {
+    title: 'Tools & Management',
+    href: '/tools',
+    icon: Settings2,
+    description: 'Strategy tools and cash management'
   },
   {
     title: 'Data Sources',
