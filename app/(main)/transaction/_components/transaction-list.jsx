@@ -1,6 +1,6 @@
-"use client"
+import { getUserAccounts, getDashboardData } from '@/actions/dashboard'
 
-export function TransactionList({ transactions, accounts }) {
+export function TransactionList({ accounts, transactions }) {
   if (!transactions?.length) {
     return (
       <div className="rounded-md border">

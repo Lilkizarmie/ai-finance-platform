@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import {
   featuresData,
-  howItWorksData,
   statsData,
   testimonialsData,
 } from "@/data/landing";

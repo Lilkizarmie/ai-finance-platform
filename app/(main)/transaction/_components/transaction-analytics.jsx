@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle, TrendingUp, TrendingDown, DollarSign, BarChart } from "lucide-react"
 import { cn } from "@/lib/utils"

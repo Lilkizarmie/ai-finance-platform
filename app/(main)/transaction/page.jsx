@@ -1,12 +1,14 @@
 import { Suspense } from 'react'
-import { getUserAccounts, getDashboardData } from '@/actions/dashboard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import { TransactionList } from './_components/transaction-list'
 import { TransactionAnalytics } from './_components/transaction-analytics'
+import { ImportTransactionsButton } from './_components/import-transactions-button'
+import { getDashboardData, getUserAccounts } from '@/actions/dashboard'
 
 export default async function TransactionsPage() {
+  // Fetch data at the page level
   const [accounts, transactions] = await Promise.all([
     getUserAccounts(),
     getDashboardData(),
@@ -32,14 +34,10 @@ export default async function TransactionsPage() {
           </div>
           <a href="/transaction/create">
             <Button>
-              Import Transaction
+              Create Transaction
             </Button>
           </a>
-           <a href="/transaction/create">
-            <Button>
-              Export Transaction
-            </Button>
-          </a>
+          <ImportTransactionsButton />
         </div>
 
         {/* Transaction Analytics */}
@@ -49,7 +47,7 @@ export default async function TransactionsPage() {
 
         {/* Transaction list */}
         <Suspense fallback={<div>Loading transactions...</div>}>
-          <TransactionList transactions={transactions} accounts={accounts} />
+          <TransactionList accounts={accounts} transactions={transactions} />
         </Suspense>
       </div>
     </div>

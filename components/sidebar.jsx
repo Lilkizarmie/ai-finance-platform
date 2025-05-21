@@ -17,9 +17,12 @@ import {
   ChevronLeft,
   ChevronRight,
   BookOpen,
-  Settings2
+  Settings2,
+  LogOut
 } from 'lucide-react'
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { UserButton, useUser } from '@clerk/nextjs'
 
 const sidebarItems = [
   {
@@ -93,6 +96,7 @@ const sidebarItems = [
 export function Sidebar({ onCollapse }) {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const { user } = useUser()
 
   const handleCollapse = () => {
     setIsCollapsed(!isCollapsed)
@@ -101,24 +105,29 @@ export function Sidebar({ onCollapse }) {
 
   return (
     <aside className={cn(
-      "fixed left-0 top-0 z-30 h-screen flex-col border-r bg-background transition-all duration-300",
-      isCollapsed ? "w-16" : "w-64"
+      "fixed left-0 top-0 z-30 h-screen flex-col border-r bg-white transition-all duration-300 shadow-sm",
+      isCollapsed ? "w-16" : "w-72"
     )}>
-      {/* Header with toggle button */}
-      <div className="flex h-14 items-center px-3 border-b">
+      {/* Header with logo and toggle button */}
+      <div className="flex h-16 items-center justify-between px-4 border-b">
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#32AE4C] flex items-center justify-center">
+              <span className="text-white font-bold text-lg">AI</span>
+            </div>
+            <span className="font-semibold text-lg">AI Finance</span>
+          </div>
+        )}
         <button
           onClick={handleCollapse}
-          className="mr-2 rounded-md p-1.5 hover:bg-accent"
+          className="p-2 rounded-lg hover:bg-green-50 transition-colors"
         >
           {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-5 w-5 text-[#32AE4C]" />
           ) : (
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-5 w-5 text-[#32AE4C]" />
           )}
         </button>
-        {!isCollapsed && (
-          <span className="font-semibold">AI Finance</span>
-        )}
       </div>
 
       <nav className="flex-1 overflow-auto py-4">
@@ -131,17 +140,22 @@ export function Sidebar({ onCollapse }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent",
-                    isActive ? "bg-accent" : "transparent",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
+                    isActive 
+                      ? "bg-[#32AE4C] text-white" 
+                      : "text-gray-600 hover:bg-green-50 hover:text-[#32AE4C]",
                     isCollapsed && "justify-center"
                   )}
                   title={isCollapsed ? item.title : undefined}
                 >
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className={cn(
+                    "h-5 w-5 transition-colors",
+                    isActive ? "text-white" : "text-[#32AE4C]"
+                  )} />
                   {!isCollapsed && (
                     <div className="flex flex-col">
-                      <span>{item.title}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="font-medium">{item.title}</span>
+                      <span className="text-xs opacity-70">
                         {item.description}
                       </span>
                     </div>
@@ -152,6 +166,54 @@ export function Sidebar({ onCollapse }) {
           </div>
         </div>
       </nav>
+
+      {/* Footer with user profile and logout */}
+      <div className="border-t p-4">
+        {!isCollapsed ? (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+              {user?.imageUrl ? (
+                <img
+                  src={user.imageUrl}
+                  alt={user.fullName || 'User'}
+                  className="w-8 h-8 rounded-full"
+                />
+              ) : (
+                <Users className="h-4 w-4 text-[#32AE4C]" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{user?.fullName || 'User'}</p>
+              <p className="text-xs text-gray-500 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+            </div>
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "w-8 h-8",
+                  userButtonPopoverCard: "shadow-lg",
+                  userButtonPopoverFooter: "hidden",
+                  userButtonPopoverActionButton: "text-[#32AE4C]",
+                  userButtonPopoverActionButtonText: "text-[#32AE4C]",
+                },
+              }}
+            />
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "w-8 h-8",
+                  userButtonPopoverCard: "shadow-lg",
+                  userButtonPopoverFooter: "hidden",
+                  userButtonPopoverActionButton: "text-[#32AE4C]",
+                  userButtonPopoverActionButtonText: "text-[#32AE4C]",
+                },
+              }}
+            />
+          </div>
+        )}
+      </div>
     </aside>
   )
 } 
