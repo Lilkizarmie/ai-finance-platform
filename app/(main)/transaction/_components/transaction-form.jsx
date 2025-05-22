@@ -36,6 +36,7 @@ export function AddTransactionForm({
   categories,
   editMode = false,
   initialData = null,
+  onSuccess,
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -116,7 +117,8 @@ export function AddTransactionForm({
           : "Transaction created successfully"
       );
       reset();
-      router.push(`/account/${transactionResult.data.accountId}`);
+      if (onSuccess) onSuccess();
+      // router.push(`/account/${transactionResult.data.accountId}`);
     }
   }, [transactionResult, transactionLoading, editMode]);
 
