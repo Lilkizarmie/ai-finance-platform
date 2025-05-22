@@ -1,169 +1,249 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
+import { cn } from "@/lib/utils";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend
 } from "recharts";
-import { format, subDays, startOfDay, endOfDay } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
-const DATE_RANGES = {
-  "7D": { label: "Last 7 Days", days: 7 },
-  "1M": { label: "Last Month", days: 30 },
-  "3M": { label: "Last 3 Months", days: 90 },
-  "6M": { label: "Last 6 Months", days: 180 },
-  ALL: { label: "All Time", days: null },
+const CHART_PERIODS = {
+  "1M": 1,
+  "3M": 3,
+  "6M": 6,
+  "1Y": 12
 };
 
 export function AccountChart({ transactions }) {
-  const [dateRange, setDateRange] = useState("1M");
+  const [period, setPeriod] = useState("3M");
+  const [view, setView] = useState("balance");
 
-  const filteredData = useMemo(() => {
-    const range = DATE_RANGES[dateRange];
-    const now = new Date();
-    const startDate = range.days
-      ? startOfDay(subDays(now, range.days))
-      : startOfDay(new Date(0));
+  // Process data for different chart types
+  const processData = () => {
+    const endDate = new Date();
+    const startDate = subMonths(endDate, CHART_PERIODS[period]);
+    
+    const filteredTransactions = transactions.filter(t => {
+      const date = new Date(t.date);
+      return date >= startDate && date <= endDate;
+    });
 
-    // Filter transactions within date range
-    const filtered = transactions.filter(
-      (t) => new Date(t.date) >= startDate && new Date(t.date) <= endOfDay(now)
-    );
+    if (view === "balance") {
+      // Daily balance data
+      const days = eachDayOfInterval({ start: startDate, end: endDate });
+      let runningBalance = 0;
+      
+      return days.map(day => {
+        const dayTransactions = filteredTransactions.filter(t => 
+          format(new Date(t.date), "yyyy-MM-dd") === format(day, "yyyy-MM-dd")
+        );
+        
+        dayTransactions.forEach(t => {
+          runningBalance += t.type === "INCOME" ? t.amount : -t.amount;
+        });
 
-    // Group transactions by date
-    const grouped = filtered.reduce((acc, transaction) => {
-      const date = format(new Date(transaction.date), "MMM dd");
-      if (!acc[date]) {
-        acc[date] = { date, income: 0, expense: 0 };
-      }
-      if (transaction.type === "INCOME") {
-        acc[date].income += transaction.amount;
-      } else {
-        acc[date].expense += transaction.amount;
-      }
-      return acc;
-    }, {});
+        return {
+          date: format(day, "MMM d"),
+          balance: runningBalance
+        };
+      });
+    } else {
+      // Monthly income/expense data
+      const months = eachMonthOfInterval({ start: startDate, end: endDate });
+      
+      return months.map(month => {
+        const monthTransactions = filteredTransactions.filter(t => {
+          const date = new Date(t.date);
+          return date >= startOfMonth(month) && date <= endOfMonth(month);
+        });
 
-    // Convert to array and sort by date
-    return Object.values(grouped).sort(
-      (a, b) => new Date(a.date) - new Date(b.date)
-    );
-  }, [transactions, dateRange]);
+        const income = monthTransactions
+          .filter(t => t.type === "INCOME")
+          .reduce((sum, t) => sum + t.amount, 0);
 
-  // Calculate totals for the selected period
-  const totals = useMemo(() => {
-    return filteredData.reduce(
-      (acc, day) => ({
-        income: acc.income + day.income,
-        expense: acc.expense + day.expense,
-      }),
-      { income: 0, expense: 0 }
-    );
-  }, [filteredData]);
+        const expenses = monthTransactions
+          .filter(t => t.type === "EXPENSE")
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        return {
+          date: format(month, "MMM yyyy"),
+          income,
+          expenses,
+          net: income - expenses
+        };
+      });
+    }
+  };
+
+  const data = processData();
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
-        <CardTitle className="text-base font-normal">
-          Transaction Overview
-        </CardTitle>
-        <Select defaultValue={dateRange} onValueChange={setDateRange}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Select range" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(DATE_RANGES).map(([key, { label }]) => (
-              <SelectItem key={key} value={key}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Account Activity</CardTitle>
+          <div className="flex items-center gap-4">
+            <Select value={period} onValueChange={setPeriod}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Select period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1M">Last Month</SelectItem>
+                <SelectItem value="3M">Last 3 Months</SelectItem>
+                <SelectItem value="6M">Last 6 Months</SelectItem>
+                <SelectItem value="1Y">Last Year</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-around mb-6 text-sm">
-          <div className="text-center">
-            <p className="text-muted-foreground">Total Income</p>
-            <p className="text-lg font-bold text-green-500">
-              ${totals.income.toFixed(2)}
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-muted-foreground">Total Expenses</p>
-            <p className="text-lg font-bold text-red-500">
-              ${totals.expense.toFixed(2)}
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-muted-foreground">Net</p>
-            <p
-              className={`text-lg font-bold ${
-                totals.income - totals.expense >= 0
-                  ? "text-green-500"
-                  : "text-red-500"
-              }`}
-            >
-              ${(totals.income - totals.expense).toFixed(2)}
-            </p>
-          </div>
-        </div>
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={filteredData}
-              margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey="date"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `$${value}`}
-              />
-              <Tooltip
-                formatter={(value) => [`$${value}`, undefined]}
-                contentStyle={{
-                  backgroundColor: "hsl(var(--popover))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "var(--radius)",
-                }}
-              />
-              <Legend />
-              <Bar
-                dataKey="income"
-                name="Income"
-                fill="#22c55e"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="expense"
-                name="Expense"
-                fill="#ef4444"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <Tabs value={view} onValueChange={setView} className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="balance">Balance</TabsTrigger>
+            <TabsTrigger value="flow">Income & Expenses</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="balance" className="space-y-4">
+            <div className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="date" 
+                    className="text-xs"
+                    tick={{ fill: "currentColor" }}
+                  />
+                  <YAxis 
+                    className="text-xs"
+                    tick={{ fill: "currentColor" }}
+                    tickFormatter={(value) => `$${value.toLocaleString()}`}
+                  />
+                  <Tooltip 
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-sm">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Date
+                                </span>
+                                <span className="font-bold text-muted-foreground">
+                                  {payload[0].payload.date}
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Balance
+                                </span>
+                                <span className="font-bold">
+                                  ${payload[0].value.toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="balance"
+                    stroke="#32AE4C"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="flow" className="space-y-4">
+            <div className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="date" 
+                    className="text-xs"
+                    tick={{ fill: "currentColor" }}
+                  />
+                  <YAxis 
+                    className="text-xs"
+                    tick={{ fill: "currentColor" }}
+                    tickFormatter={(value) => `$${value.toLocaleString()}`}
+                  />
+                  <Tooltip 
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="rounded-lg border bg-background p-2 shadow-sm">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Date
+                                </span>
+                                <span className="font-bold text-muted-foreground">
+                                  {payload[0].payload.date}
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Income
+                                </span>
+                                <span className="font-bold text-green-500">
+                                  ${payload[0].value.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Expenses
+                                </span>
+                                <span className="font-bold text-red-500">
+                                  ${payload[1].value.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                  Net
+                                </span>
+                                <span className={cn(
+                                  "font-bold",
+                                  payload[2].value >= 0 ? "text-green-500" : "text-red-500"
+                                )}>
+                                  ${payload[2].value.toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="income" name="Income" fill="#32AE4C" />
+                  <Bar dataKey="expenses" name="Expenses" fill="#ef4444" />
+                  <Bar dataKey="net" name="Net" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

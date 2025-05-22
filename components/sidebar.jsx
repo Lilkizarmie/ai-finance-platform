@@ -18,7 +18,8 @@ import {
   ChevronRight,
   BookOpen,
   Settings2,
-  LogOut
+  LogOut,
+  ShoppingCart
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -54,6 +55,12 @@ const sidebarItems = [
     href: '/bills',
     icon: CreditCard,
     description: 'Track bills and expenses'
+  },
+  {
+    title: 'Sales Analysis',
+    href: '/product-analysis',
+    icon: ShoppingCart,
+    description: 'Insights into product sales'
   },
   {
     title: 'Reports',
