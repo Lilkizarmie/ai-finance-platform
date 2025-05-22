@@ -19,13 +19,20 @@ import {
   BookOpen,
   Settings2,
   LogOut,
-  ShoppingCart
+  ShoppingCart,
+  UserPlus
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { UserButton, useUser } from '@clerk/nextjs'
 
 const sidebarItems = [
+  {
+    title: 'Onboarding',
+    href: '/onboarding',
+    icon: UserPlus,
+    description: 'Setup your account'
+  },
   {
     title: 'Dashboard',
     href: '/dashboard',
